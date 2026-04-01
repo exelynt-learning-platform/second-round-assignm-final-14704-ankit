@@ -24,14 +24,9 @@ public class CartItem {
     @JoinColumn(name = "cart_id", nullable = false)
     private Cart cart;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name = "cart_item_product",
-            joinColumns = @JoinColumn(name = "cart_item_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    @Builder.Default
-    private Set<Product> products = new HashSet<>();
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Column(nullable = false)
     private Integer quantity;
@@ -43,8 +38,6 @@ public class CartItem {
     private Long updatedAt;
 
     public BigDecimal getTotalPrice() {
-        return products.stream()
-                .map(p -> p.getPrice().multiply(new BigDecimal(quantity)))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return product.getPrice().multiply(new BigDecimal(quantity));
     }
 }

@@ -57,9 +57,9 @@ public class OrderService {
         for (CartItem cartItem : cartItemsCopy) {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
-                    .products(cartItem.getProducts())
+                    .product(cartItem.getProduct())
                     .quantity(cartItem.getQuantity())
-                    .pricePerUnit(cartItem.getProducts().iterator().next().getPrice())
+                    .pricePerUnit(cartItem.getProduct().getPrice())
                     .build();
             orderItems.add(orderItem);
         }
@@ -68,10 +68,9 @@ public class OrderService {
 
         // Reduce product stock
         for (CartItem cartItem : cart.getCartItems()) {
-            for (Product product : cartItem.getProducts()) {
-                product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
-                productRepository.save(product);
-            }
+            Product product = cartItem.getProduct();
+            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+            productRepository.save(product);
         }
 
         order = orderRepository.save(order);
@@ -162,13 +161,11 @@ public class OrderService {
     }
 
     private OrderItemDTO convertOrderItemToDTO(OrderItem orderItem) {
-        List<ProductDTO> productDTOs = orderItem.getProducts().stream()
-                .map(this::convertProductToDTO)
-                .toList();
+        ProductDTO productDTO = convertProductToDTO(orderItem.getProduct());
 
         return OrderItemDTO.builder()
                 .id(orderItem.getId())
-                .products(productDTOs)
+                .products(List.of(productDTO))
                 .quantity(orderItem.getQuantity())
                 .pricePerUnit(orderItem.getPricePerUnit())
                 .totalPrice(orderItem.getTotalPrice())

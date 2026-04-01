@@ -49,7 +49,7 @@ public class CartService {
                         .build());
 
         Optional<CartItem> existingItem = cart.getCartItems().stream()
-                .filter(item -> item.getProducts().contains(product))
+                .filter(item -> item.getProduct().getId().equals(product.getId()))
                 .findFirst();
 
         if (existingItem.isPresent()) {
@@ -59,7 +59,7 @@ public class CartService {
         } else {
             CartItem newItem = CartItem.builder()
                     .cart(cart)
-                    .products(new HashSet<>(Collections.singletonList(product)))
+                    .product(product)
                     .quantity(request.getQuantity())
                     .build();
             cart.getCartItems().add(newItem);
@@ -93,11 +93,11 @@ public class CartService {
             throw new InvalidRequestException("Cart item does not belong to this cart");
         }
 
-        if (cartItem.getProducts() == null || cartItem.getProducts().isEmpty()) {
-            throw new InvalidRequestException("Cart item has no products");
+        if (cartItem.getProduct() == null) {
+            throw new InvalidRequestException("Cart item has no product");
         }
 
-        Product product = cartItem.getProducts().iterator().next();
+        Product product = cartItem.getProduct();
         if (product.getStockQuantity() < newQuantity) {
             throw new InvalidRequestException("Insufficient stock available");
         }
@@ -156,13 +156,11 @@ public class CartService {
     }
 
     private CartItemDTO convertCartItemToDTO(CartItem cartItem) {
-        List<ProductDTO> productDTOs = cartItem.getProducts().stream()
-                .map(this::convertProductToDTO)
-                .toList();
+        ProductDTO productDTO = convertProductToDTO(cartItem.getProduct());
 
         return CartItemDTO.builder()
                 .id(cartItem.getId())
-                .products(productDTOs)
+                .products(List.of(productDTO))
                 .quantity(cartItem.getQuantity())
                 .totalPrice(cartItem.getTotalPrice())
                 .createdAt(cartItem.getCreatedAt())

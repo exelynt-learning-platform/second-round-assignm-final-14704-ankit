@@ -39,11 +39,11 @@ public class Product {
     @Builder.Default
     private String status = "AVAILABLE";
 
-    @ManyToMany(mappedBy = "products")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CartItem> cartItems = new HashSet<>();
 
-    @ManyToMany(mappedBy = "products")
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<OrderItem> orderItems = new HashSet<>();
 
