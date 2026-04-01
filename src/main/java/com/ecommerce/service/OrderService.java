@@ -53,7 +53,8 @@ public class OrderService {
                 .build();
 
         Set<OrderItem> orderItems = new HashSet<>();
-        for (CartItem cartItem : cart.getCartItems()) {
+        List<CartItem> cartItemsCopy = new ArrayList<>(cart.getCartItems());
+        for (CartItem cartItem : cartItemsCopy) {
             OrderItem orderItem = OrderItem.builder()
                     .order(order)
                     .products(cartItem.getProducts())

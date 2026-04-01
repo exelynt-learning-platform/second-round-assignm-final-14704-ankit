@@ -2,8 +2,8 @@ package com.ecommerce.controller;
 
 import com.ecommerce.dto.PaymentRequest;
 import com.ecommerce.dto.PaymentResponse;
-import com.ecommerce.security.JwtTokenProvider;
 import com.ecommerce.service.PaymentService;
+import com.ecommerce.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final SecurityUtil securityUtil;
 
     @PostMapping("/process")
     @Operation(summary = "Process payment", description = "Process a payment for an order using Stripe")
@@ -35,7 +35,7 @@ public class PaymentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<PaymentResponse> processPayment(HttpServletRequest request,
                                                          @Valid @RequestBody PaymentRequest paymentRequest) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         PaymentResponse response = paymentService.processPayment(paymentRequest.getOrderId(), userId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -62,12 +62,5 @@ public class PaymentController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private Long extractUserIdFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            return jwtTokenProvider.getUserIdFromToken(token);
-        }
-        throw new RuntimeException("Invalid token");
-    }
+
 }

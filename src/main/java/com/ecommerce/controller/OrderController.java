@@ -2,8 +2,8 @@ package com.ecommerce.controller;
 
 import com.ecommerce.dto.CreateOrderRequest;
 import com.ecommerce.dto.OrderDTO;
-import com.ecommerce.security.JwtTokenProvider;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -28,7 +28,7 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final SecurityUtil securityUtil;
 
     @PostMapping
     @Operation(summary = "Create order", description = "Create a new order from the user's shopping cart")
@@ -37,7 +37,7 @@ public class OrderController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<OrderDTO> createOrder(HttpServletRequest request,
                                                 @Valid @RequestBody CreateOrderRequest createOrderRequest) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         OrderDTO orderDTO = orderService.createOrderFromCart(userId, createOrderRequest);
         return new ResponseEntity<>(orderDTO, HttpStatus.CREATED);
     }
@@ -50,7 +50,7 @@ public class OrderController {
     @ApiResponse(responseCode = "404", description = "Order not found")
     public ResponseEntity<OrderDTO> getOrderById(HttpServletRequest request,
                                                  @PathVariable Long orderId) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         OrderDTO orderDTO = orderService.getOrderById(orderId, userId);
         return new ResponseEntity<>(orderDTO, HttpStatus.OK);
     }
@@ -60,7 +60,7 @@ public class OrderController {
     @ApiResponse(responseCode = "200", description = "Orders retrieved successfully")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<List<OrderDTO>> getUserOrders(HttpServletRequest request) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         List<OrderDTO> orders = orderService.getUserOrders(userId);
         return new ResponseEntity<>(orders, HttpStatus.OK);
     }
@@ -79,12 +79,5 @@ public class OrderController {
         return new ResponseEntity<>(orderDTO, HttpStatus.OK);
     }
 
-    private Long extractUserIdFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            return jwtTokenProvider.getUserIdFromToken(token);
-        }
-        throw new RuntimeException("Invalid token");
-    }
+
 }

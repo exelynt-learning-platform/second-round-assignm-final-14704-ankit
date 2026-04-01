@@ -35,11 +35,6 @@ public class AuthService {
 
         Set<Role> roles = new HashSet<>();
         roles.add(Role.ROLE_USER);
-        
-        // Check if email contains "admin" to assign admin role
-        if (request.getEmail().toLowerCase().contains("admin")) {
-            roles.add(Role.ROLE_ADMIN);
-        }
 
         User user = User.builder()
                 .email(request.getEmail())

@@ -2,8 +2,8 @@ package com.ecommerce.controller;
 
 import com.ecommerce.dto.AddToCartRequest;
 import com.ecommerce.dto.CartDTO;
-import com.ecommerce.security.JwtTokenProvider;
 import com.ecommerce.service.CartService;
+import com.ecommerce.util.SecurityUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 public class CartController {
 
     private final CartService cartService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final SecurityUtil securityUtil;
 
     @PostMapping("/items")
     @Operation(summary = "Add item to cart", description = "Add a product to the user's shopping cart")
@@ -34,7 +34,7 @@ public class CartController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<CartDTO> addToCart(HttpServletRequest request,
                                              @Valid @RequestBody AddToCartRequest addToCartRequest) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         CartDTO cartDTO = cartService.addToCart(userId, addToCartRequest);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
@@ -44,7 +44,7 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Cart retrieved successfully")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<CartDTO> getCart(HttpServletRequest request) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         CartDTO cartDTO = cartService.getCart(userId);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
@@ -58,7 +58,7 @@ public class CartController {
     public ResponseEntity<CartDTO> updateCartItem(HttpServletRequest request,
                                                   @PathVariable Long cartItemId,
                                                   @RequestParam Integer quantity) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         CartDTO cartDTO = cartService.updateCartItem(userId, cartItemId, quantity);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
@@ -70,24 +70,17 @@ public class CartController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<CartDTO> removeFromCart(HttpServletRequest request,
                                                   @PathVariable Long cartItemId) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         CartDTO cartDTO = cartService.removeFromCart(userId, cartItemId);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
 
     @DeleteMapping
     public ResponseEntity<Void> clearCart(HttpServletRequest request) {
-        Long userId = extractUserIdFromRequest(request);
+        Long userId = securityUtil.extractUserIdFromRequest(request);
         cartService.clearCart(userId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    private Long extractUserIdFromRequest(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-            String token = bearerToken.substring(7);
-            return jwtTokenProvider.getUserIdFromToken(token);
-        }
-        throw new RuntimeException("Invalid token");
-    }
+
 }

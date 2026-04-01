@@ -93,6 +93,10 @@ public class CartService {
             throw new InvalidRequestException("Cart item does not belong to this cart");
         }
 
+        if (cartItem.getProducts() == null || cartItem.getProducts().isEmpty()) {
+            throw new InvalidRequestException("Cart item has no products");
+        }
+
         Product product = cartItem.getProducts().iterator().next();
         if (product.getStockQuantity() < newQuantity) {
             throw new InvalidRequestException("Insufficient stock available");
