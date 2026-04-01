@@ -19,6 +19,12 @@ public class JwtTokenProvider {
     private long jwtExpirationMs;
 
     private SecretKey getSigningKey() {
+        if (jwtSecret == null || jwtSecret.isEmpty()) {
+            throw new IllegalArgumentException("JWT_SECRET environment variable must be set");
+        }
+        if (jwtSecret.getBytes().length < 32) {
+            throw new IllegalArgumentException("JWT_SECRET must be at least 256 bits (32 bytes) long");
+        }
         byte[] keyBytes = jwtSecret.getBytes();
         return Keys.hmacShaKeyFor(keyBytes);
     }
