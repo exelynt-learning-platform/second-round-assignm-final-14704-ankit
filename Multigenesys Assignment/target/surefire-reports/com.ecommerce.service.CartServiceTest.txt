@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: com.ecommerce.service.CartServiceTest
--------------------------------------------------------------------------------
-Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.558 s - in com.ecommerce.service.CartServiceTest
